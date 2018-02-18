@@ -4,8 +4,8 @@ import sbt.Keys.scalacOptions
 import sbt.addCompilerPlugin
 
 name               in ThisBuild := "utest"
-organization       in ThisBuild := "com.lihaoyi"
-scalaVersion       in ThisBuild := "2.12.2"
+organization       in ThisBuild := "com.github.xenoby"
+scalaVersion       in ThisBuild := "2.11.12"
 crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.11", "2.12.2", "2.13.0-M2")
 updateOptions      in ThisBuild := (updateOptions in ThisBuild).value.withCachedResolution(true)
 incOptions         in ThisBuild := (incOptions in ThisBuild).value.withNameHashing(true).withLogRecompileOnMacro(false)
@@ -35,12 +35,13 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     // Release settings
     releasePublishArtifactsAction := publishSigned.value,
     publishArtifact in Test := false,
-    publishTo := {
-      val nexus = "https://oss.sonatype.org/"
-      if (isSnapshot.value)
-        Some("snapshots" at nexus + "content/repositories/snapshots")
-      else
-        Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    publishTo := Some("releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
+    resolvers += "Sonatype staging" at "https://oss.sonatype.org/content/repositories/staging",
+    credentials ++= {
+      lazy val credentials = sys.props("credentials")
+      val credentialsFile = if (credentials != null) new File(credentials) else null
+      if (credentialsFile != null) List(new FileCredentials(credentialsFile))
+      else Nil
     },
     homepage := Some(url("https://github.com/lihaoyi/utest")),
     scmInfo := Some(ScmInfo(
@@ -72,10 +73,10 @@ lazy val utest = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     resolvers += Resolver.sonatypeRepo("snapshots")
   )
   .nativeSettings(
-    scalaVersion := "2.11.11",
-    crossScalaVersions := Seq("2.11.11"),
+    scalaVersion := "2.11.12",
+    crossScalaVersions := Seq("2.11.12"),
     libraryDependencies ++= Seq(
-      "org.scala-native" %%% "test-interface" % "0.3.0"
+      "com.github.xenoby" %%% "test-interface" % "0.3.6-20-g0afae98f36"
     ),
     nativeLinkStubs := true
   )
